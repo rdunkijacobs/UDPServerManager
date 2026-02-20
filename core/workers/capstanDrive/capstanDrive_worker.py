@@ -17,7 +17,7 @@ class CapstanDriveWorker(threading.Thread):
         self.command_dict = self.load_command_dictionary()
 
     def load_command_dictionary(self):
-        dict_path = os.path.join(os.path.dirname(__file__), 'capstanDrive_commandDictionary.json')
+        dict_path = os.path.join(os.path.dirname(__file__), '../../../../../shared_dictionaries/command_dictionaries/capstanDrive_commandDictionary.json')
         try:
             with open(dict_path, 'r') as f:
                 return json.load(f)

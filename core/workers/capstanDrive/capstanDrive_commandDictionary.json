@@ -1,126 +1,988 @@
 {
+  "categories": [
+    "Device Control",
+    "Device Status",
+    "Error Handling",
+    "System Administration"
+  ],
   "commands": {
     "LED": {
+      "category": "Device Control",
       "description": "Controls the state of an LED.",
       "param_count": 3,
       "parameters": [
-        {"name": "led_number",
-          "type": "integer", 
-          "param_number": 1, 
-          "range": {"min": 1, "max": 8, "min_ignorable": true, "max_ignorable": true},
-          "options": [],
-          "condition": []
-          },
-        {"name": "mode",
-          "type": "enum", 
-          "param_number": 2, 
-          "options": ["on_off",
-            "toggle", 
-            "blink", 
+        {
+          "name": "led_number",
+          "type": "enum",
+          "param_number": 1,
+          "options": ["redLED", "greenLED", "blueLED"],
+          "condition": [],
+          "units": "",
+          "notes": "Required."
+        },
+        {
+          "name": "mode",
+          "type": "enum",
+          "param_number": 2,
+          "options": [
+            "on_off",
+            "toggle",
+            "blink",
             "flash"
-            ],
-          "condition": []
-          },
-        {"name": "state",
+          ],
+          "condition": [],
+          "units": "",
+          "notes": "parameter is the text of the enum option."
+        },
+        {
+          "name": "state",
           "type": "boolean",
-          "param_number": 3, 
-          "options": [],
-          "condition": ["mode == on_off"]
+          "param_number": 3,
+          "options": ["on","off"],
+          "condition": [
+            "mode == on_off"
+          ],
+          "units": "",
+          "notes": "1 for on, 0 for off. Ignored for other modes."
+        },
+        {
+          "name": "blink_count",
+          "type": "integer",
+          "param_number": 3,
+          "range": {
+            "min": 1,
+            "max": 50,
+            "min_ignorable": false,
+            "max_ignorable": true
           },
-        {"name": "blink_count", 
-          "type": "integer", 
-          "param_number": 3, 
-          "range": {"min": 1, "max": 50, "min_ignorable": false, "max_ignorable": true},
           "options": [],
-          "condition": ["mode == blink"]
+          "condition": [
+            "mode == blink"
+          ],
+          "units": "",
+          "notes": "Number of blinks before returning to previous state. Ignored for other modes."
+        },
+        {
+          "name": "blink_period",
+          "type": "float",
+          "param_number": 4,
+          "range": {
+            "min": 0.1,
+            "max": 10.0,
+            "min_ignorable": true,
+            "max_ignorable": true
           },
-        {"name": "blink_period", 
-          "type": "float", 
-          "param_number": 4, 
-          "range": {"min": 0.1, "max": 10.0, "min_ignorable": true, "max_ignorable": true},
           "options": [],
-          "condition": ["mode == blink"]
+          "condition": [
+            "mode == blink"
+          ],
+          "units": "s",
+          "notes": "Duration of each blink in seconds. Ignored for other modes."
+        },
+        {
+          "name": "flash_rate_hz",
+          "type": "float",
+          "param_number": 3,
+          "range": {
+            "min": 0.5,
+            "max": 100.0,
+            "min_ignorable": true,
+            "max_ignorable": false
           },
-        {"name": "flash_rate_hz", 
-          "type": "float", 
-          "param_number": 3, 
-          "range": {"min": 0.5, "max": 100.0, "min_ignorable": true, "max_ignorable": false}, 
           "options": [],
-          "condition": ["mode == flash"]
+          "condition": [
+            "mode == flash"
+          ],
+          "units": "Hz",
+          "notes": "Frequency of flashes in Hz. Ignored for other modes."
+        },
+        {
+          "name": "duty_cycle",
+          "type": "float",
+          "param_number": 4,
+          "range": {
+            "min": 0.0,
+            "max": 100.0,
+            "min_ignorable": false,
+            "max_ignorable": false
           },
-        {"name": "duty_cycle", 
-          "type": "float", 
-          "param_number": 4, 
-          "range": {"min": 0.0, "max": 100.0, "min_ignorable": false, "max_ignorable": false},
           "options": [],
-          "condition": ["mode == flash"]
-          }
-        ],
+          "condition": [
+            "mode == flash"
+          ],
+          "units": "%",
+          "notes": "Duty cycle of flashes in %. Ignored for other modes."
+        }
+      ],
       "function": "handle_led"
     },
     "HPL": {
+      "category": "Device Control",
       "description": "Controls high power logic voltage output.",
       "param_count": 2,
       "parameters": [
-        {"name": "hpl_number",
-          "type": "integer", 
-          "param_number": 1, 
-          "range": {"min": 1, "max": 4, "min_ignorable": true, "max_ignorable": true}
+        {
+          "name": "hpl_number",
+          "type": "integer",
+          "param_number": 1,
+          "range": {
+            "min": 1,
+            "max": 1,
+            "min_ignorable": false,
+            "max_ignorable": false
           },
-        {"name": "mode", 
-          "type": "enum", 
-          "param_number": 2, 
-          "options": ["on_off", "toggle"]
-          },
-        {"name": "state", "type": "boolean", "param_number": 3, "condition": "mode == on_off"}
-        ],
+          "options": [],
+          "condition": [],
+          "units": "",
+          "notes": "Required"
+        },
+        {
+          "name": "mode",
+          "type": "enum",
+          "param_number": 2,
+          "options": [
+            "on_off",
+            "toggle"
+          ],
+          "condition": [],
+          "units": "",
+          "notes": "Parameter is the text of the enum option."
+        },
+        {
+          "name": "state",
+          "type": "boolean",
+          "param_number": 3,
+          "options": ["on","off"],
+          "condition": [
+            "mode == on_off"
+          ],
+          "units": "",
+          "notes": "1 for on, 0 for off. Ignored for other modes."
+        }
+      ],
       "function": "handle_hpl"
     },
-    "DVR8833": {
-      "description": "Controls a DVR8833 motor driver.",
+    "STEPPER": {
+      "category": "Device Control",
+      "description": "Controls a stepper motor driver.",
+      "param_count": 7,
+      "parameters": [
+        {
+          "name": "motor_number",
+          "type": "enum",
+          "param_number": 1,
+          "options": ["DVR8833", "DVR882X", "HighPower"],
+          "condition": [],
+          "units": "",
+          "notes": "Required. 1=DVR8833, 2=DVR882X, 3=HighPower"
+        },
+        {
+          "name": "mode",
+          "type": "enum",
+          "param_number": 2,
+          "options": [
+            "cw",
+            "ccw",
+            "brake",
+            "coast",
+            "stop",
+            "pause",
+            "resume",
+            "reset",
+            "pulse",
+            "pwl",
+            "vpid",
+            "ppid"
+          ],
+          "condition": [],
+          "units": "",
+          "notes": "Parameter is the text of the enum option. cw, ccw, pulse, vpid, ppid terminated on pause or stop."
+        },
+        {
+          "name": "speed",
+          "type": "float",
+          "param_number": 3,
+          "range": {
+            "min": 0.0,
+            "max": 10000.0,
+            "min_ignorable": true,
+            "max_ignorable": true
+          },
+          "condition": [
+            "mode == cw",
+            "mode == ccw"
+          ],
+          "units": "rev/s",
+          "notes": "Speed [rev/s] of the stepper motor. Ignored for other modes."
+        },
+        {
+          "name": "resetobject",
+          "type": "enum",
+          "param_number": 3,
+          "options": [
+            "position",
+            "acceleration"
+          ],
+          "condition": [
+            "mode == reset"
+          ],
+          "units": "",
+          "notes": "Parameter is the text of the enum option."
+        },
+        {
+          "name": "on_off",
+          "type": "boolean",
+          "param_number": 3,
+          "options": ["on","off"],
+          "condition": [
+            "mode == brake",
+            "mode == coast"
+          ],
+          "units": "",
+          "notes": "1 for on, 0 for off. Ignored for other modes."
+        },
+        {
+          "name": "polarity",
+          "type": "enum",
+          "param_number": 3,
+          "options": [
+            "nL",
+            "nH"
+          ],
+          "condition": [
+            "mode == pulse"
+          ],
+          "units": "",
+          "notes": "Pulsed velocity: nL = current velocity + delta_v , nH = current velocity - delta_v. Parameter is the text of the enum option."
+        },
+        {
+          "name": "delta_v",
+          "type": "float",
+          "param_number": 3,
+          "options": [],
+          "range": {
+            "min": 0.0,
+            "max": 10000.0,
+            "min_ignorable": true,
+            "max_ignorable": true
+          },
+          "condition": [
+            "mode == pwl"
+          ],
+          "units": "rev/s",
+          "notes": "Velocity change [rev/s] for pwl mode. Ignored for other modes."
+        },
+        {
+          "name": "target_v",
+          "type": "float",
+          "param_number": 3,
+          "options": [],
+          "range": {
+            "min": 0.0,
+            "max": 10000.0,
+            "min_ignorable": true,
+            "max_ignorable": true
+          },
+          "condition": [
+            "mode == vpid"
+          ],
+          "units": "rev/s",
+          "notes": "Target velocity [rev/s] for vpid mode. Ignored for other modes."
+        },
+        {
+          "name": "target_p",
+          "type": "float",
+          "param_number": 3,
+          "options": [],
+          "range": {
+            "min": 0.0,
+            "max": 10000.0,
+            "min_ignorable": false,
+            "max_ignorable": true
+          },
+          "condition": [
+            "mode == ppid"
+          ],
+          "units": "rev",
+          "notes": "Target position [revs] for ppid mode. Ignored for other modes."
+        },
+        {
+          "name": "tR",
+          "type": "float",
+          "param_number": 4,
+          "options": [],
+          "range": {
+            "min": 0.0,
+            "max": 10000.0,
+            "min_ignorable": true,
+            "max_ignorable": true
+          },
+          "condition": [
+            "mode == pulse"
+          ],
+          "units": "s",
+          "notes": "Rise time for pulse mode. Ignored for other modes."
+        },
+        {
+          "name": "t_a",
+          "type": "float",
+          "param_number": 4,
+          "options": [],
+          "range": {
+            "min": 0.0,
+            "max": 10000.0,
+            "min_ignorable": true,
+            "max_ignorable": true
+          },
+          "condition": [
+            "mode == pwl"
+          ],
+          "units": "s",
+          "notes": "Acceleration time for pwl mode. Ignored for other modes."
+        },
+        {
+          "name": "kp",
+          "type": "float",
+          "param_number": 4,
+          "options": [],
+          "range": {
+            "min": 0.0,
+            "max": 1000.0,
+            "min_ignorable": false,
+            "max_ignorable": false
+          },
+          "condition": [
+            "mode == vpid",
+            "mode == ppid"
+          ],
+          "units": "",
+          "notes": "Proportional delay coefficient for PID. Ignored for other modes."
+        },
+        {
+          "name": "tF",
+          "type": "float",
+          "param_number": 5,
+          "options": [],
+          "range": {
+            "min": 0.0,
+            "max": 10000.0,
+            "min_ignorable": true,
+            "max_ignorable": true
+          },
+          "condition": [
+            "mode == pulse"
+          ],
+          "units": "s",
+          "notes": "Fall time for pulse mode. Ignored for other modes."
+        },
+        {
+          "name": "option_type",
+          "type": "enum",
+          "param_number": 5,
+          "options": ["tC","tN","rev","revN"],
+          "condition": [
+            "mode == pwl"
+          ],
+          "units": "",
+          "notes": "PWL length option. tC: time in sec at final velocity, tN: net time in sec (time - tA) final velocity, rev: revolutions at final velocity. Ignored for other modes. Parameter is the text of the enum option."
+        },
+        {
+          "name": "ki",
+          "type": "float",
+          "param_number": 5,
+          "options": [],
+          "range": {
+            "min": 0.0,
+            "max": 10000.0,
+            "min_ignorable": false,
+            "max_ignorable": false
+          },
+          "condition": [
+            "mode == vpid",
+            "mode == ppid"
+          ],
+          "units": "",
+          "notes": "Integral delay coefficient for PID. Ignored for other modes."
+        },
+        {
+          "name": "delta_v",
+          "type": "float",
+          "param_number": 6,
+          "options": [],
+          "range": {
+            "min": 0.0,
+            "max": 10000.0,
+            "min_ignorable": true,
+            "max_ignorable": true
+          },
+          "condition": [
+            "mode == pulse"
+          ],
+          "units": "rev/s",
+          "notes": "Change in velocity [rev/s] for pulse mode. Ignored for other modes."
+        },
+        {
+          "name": "opton_value",
+          "type": "float",
+          "param_number": 6,
+          "options": [],
+          "range": {
+            "min": 0.0,
+            "max": 10000.0,
+            "min_ignorable": true,
+            "max_ignorable": true
+          },
+          "condition": [
+            "mode == pwl"
+          ],
+          "units": [{"tC": "s"}, {"tN": "s"}, {"rev": "rev"}, {"revN": "rev"}],
+          "notes": "Option value for pwl mode. Ignored for other modes."
+        },
+        {
+          "name": "kd",
+          "type": "float",
+          "param_number": 6,
+          "options": [],
+          "range": {
+            "min": 0.0,
+            "max": 1000.0,
+            "min_ignorable": false,
+            "max_ignorable": false
+          },
+          "condition": [
+            "mode == vpid",
+            "mode == ppid"
+          ],
+          "units": "",
+          "notes": "Derivative delay coefficient for PID. Ignored for other modes."
+        },
+        {
+          "name": "period_type",
+          "type": "enum",
+          "param_number": 7,
+          "options": [
+            "time",
+            "revolutions"
+          ],
+          "condition": [
+            "mode == pulse"
+          ],
+          "units": "",
+          "notes": "Pulse duration type (elapsed time or revolutions). Parameter is the text of the enum option."
+        },
+        {
+          "name": "windup",
+          "type": "float",
+          "param_number": 7,
+          "options": [],
+          "range": {
+            "min": 0.0,
+            "max": 1000.0,
+            "min_ignorable": false,
+            "max_ignorable": false
+          },
+          "condition": [
+            "mode == vpid",
+            "mode == ppid"
+          ],
+          "units": "",
+          "notes": "Windup limit for PID. Ignored for other modes."
+        },
+        {
+          "name": "period_value",
+          "type": "float",
+          "param_number": 8,
+          "options": [],
+          "range": {
+            "min": 0.0,
+            "max": 100000.0,
+            "min_ignorable": true,
+            "max_ignorable": true
+          },
+          "condition": [
+            "mode == pulse"
+          ],
+          "units": [{"time": "s"}, {"revolutions": "rev"}],
+          "notes": "Pulse duration in elapsed time (if period_type='time') or revolutions (if period_type='revolutions'). Parameter is the text of the enum option."
+        },
+        {
+          "name": "dt",
+          "type": "float",
+          "param_number": 8,
+          "options": [],
+          "range": {
+            "min": 0.0,
+            "max": 10.0,
+            "min_ignorable": false,
+            "max_ignorable": false
+          },
+          "condition": [
+            "mode == vpid",
+            "mode == ppid"
+          ],
+          "units": "s",
+          "notes": "Time step for PID controller. Ignored for other modes."
+        },
+        {
+          "name": "duty_cycle",
+          "type": "float",
+          "param_number": 9,
+          "options": [],
+          "range": {
+            "min": 0.0,
+            "max": 100.0,
+            "min_ignorable": false,
+            "max_ignorable": false
+          },
+          "condition": [
+            "mode == pulse"
+          ],
+          "units": "%",
+          "notes": "Percentage of time the pulse is active (including tR and tF) during its period, depending on period_type. Ignored for other modes."
+        }
+      ],
+      "function": "handle_stepper"
+    },
+    "ENCODER": {
+      "category": "Device Control",
+      "description": "Control quadrature encoder (reset, arm index, set position).",
       "param_count": 3,
       "parameters": [
-        {"name": "motor_number", 
-          "type": "integer", 
-          "param_number": 1, 
-          "range": {"min": 1, "max": 2, "min_ignorable": true, "max_ignorable": true}
+        {
+          "name": "encoder_number",
+          "type": "integer",
+          "param_number": 1,
+          "range": {
+            "min": 1,
+            "max": 2,
+            "min_ignorable": false,
+            "max_ignorable": false
           },
-        {"name": "mode", 
-          "type": "enum", 
-          "param_number": 2, 
-          "options": ["forward_reverse", "brake", "coast"]
+          "options": [],
+          "condition": [],
+          "units": ""
+        },
+        {
+          "name": "command",
+          "type": "enum",
+          "param_number": 2,
+          "options": [
+            "reset",
+            "arm_index",
+            "disarm_index",
+            "set_position"
+          ],
+          "condition": [],
+          "units": ""
+        },
+        {
+          "name": "value",
+          "type": "integer",
+          "param_number": 3,
+          "range": {
+            "min": -32768,
+            "max": 32767,
+            "min_ignorable": false,
+            "max_ignorable": false
           },
-        {"name": "speed", 
-          "type": "float", 
-          "param_number": 3, 
-          "range": {"min": 0.0, "max": 10000.0, "min_ignorable": true, "max_ignorable": true},
-          "condition": ["mode == forward_reverse"]
-          }
-        ],
-      "function": "handle_dvr8833"
+          "options": [],
+          "condition": [
+            "command == set_position"
+          ],
+          "units": ""
+        }
+      ],
+      "function": "handle_encoder"
     },
     "GET_LED": {
+      "category": "Device Status",
       "description": "Retrieve current state of a specific LED.",
       "param_count": 1,
       "parameters": [
-          {"name": "led_number", 
-              "type": "integer", 
-              "param_number": 1,
-              "range": {"min": 1,
-              "max": 8}
-              }
-           ],
+        {
+          "name": "led_number",
+          "type": "integer",
+          "param_number": 1,
+          "range": {
+            "min": 1,
+            "max": 8
+          },
+          "units": ""
+        }
+      ],
       "function": "handle_get_led",
-      "returns": "mode_idx,state,blink_count,blink_period,flash_rate,flash_duty"
-       },
-    "GET_DVR8833": {
-      "description": "Retrieve state of a specific DVR8833 motor driver.",
+      "returns": [
+        {
+          "name": "led_number",
+          "type": "integer",
+          "parameter_number": 1,
+          "units": "",
+          "notes": "LED identifier (1=red, 2=green, 3=blue)"
+        },
+        {
+          "name": "state",
+          "type": "boolean",
+          "parameter_number": 2,
+          "units": "",
+          "notes": "Current state: 1=on, 0=off"
+        },
+        {
+          "name": "mode",
+          "type": "enum",
+          "parameter_number": 3,
+          "options": ["idle", "on_off", "blink", "flash"],
+          "units": "",
+          "notes": "Current operating mode"
+        },
+        {
+          "name": "mode_params",
+          "type": "string",
+          "parameter_number": 4,
+          "units": "",
+          "notes": "Mode-specific parameters: blink mode='n=count,d=duration', flash mode='f=freq,dc=duty_cycle', otherwise empty"
+        }
+      ]
+    },
+    "GET_HPL": {
+      "category": "Device Status",
+      "description": "Retrieve current state of a specific HPL output.",
       "param_count": 1,
-      "parameters": [{"name": "motor_number", "type": "integer", "param_number": 1, "range": {"min": 1, "max": 4}}],
-      "function": "handle_get_dvr8833",
-      "returns": "velocity,position,accel,max_pos_a,max_neg_a,running"
+      "parameters": [
+        {
+          "name": "hpl_number",
+          "type": "integer",
+          "param_number": 1,
+          "range": {
+            "min": 1,
+            "max": 4
+          },
+          "units": ""
+        }
+      ],
+      "function": "handle_get_hpl",
+      "returns": [
+        {
+          "name": "hpl_number",
+          "type": "integer",
+          "parameter_number": 1,
+          "units": "",
+          "notes": "HPL output identifier (1-4)"
+        },
+        {
+          "name": "state",
+          "type": "boolean",
+          "parameter_number": 2,
+          "units": "",
+          "notes": "Current state: 1=on, 0=off"
+        }
+      ]
+    },
+    "GET_STEPPER": {
+      "category": "Device Status",
+      "description": "Retrieve current state of a specific stepper motor.",
+      "param_count": 1,
+      "parameters": [
+        {
+          "name": "motor_number",
+          "type": "integer",
+          "param_number": 1,
+          "range": {
+            "min": 1,
+            "max": 4
+          },
+          "units": ""
+        }
+      ],
+      "function": "handle_get_stepper",
+      "returns": [
+        {
+          "name": "stepper_number",
+          "type": "integer",
+          "parameter_number": 1,
+          "units": "",
+          "notes": "Stepper motor identifier (1=DVR8833, 2=DVR882X, 3=HighPower)"
+        },
+        {
+          "name": "is_running",
+          "type": "boolean",
+          "parameter_number": 2,
+          "units": "",
+          "notes": "Motor running state: 1=running, 0=stopped"
+        },
+        {
+          "name": "current_position",
+          "type": "float",
+          "parameter_number": 3,
+          "units": "deg",
+          "notes": "Current position in degrees"
+        },
+        {
+          "name": "current_velocity",
+          "type": "float",
+          "parameter_number": 4,
+          "units": "deg/s",
+          "notes": "Current velocity in degrees per second"
+        },
+        {
+          "name": "current_acceleration",
+          "type": "float",
+          "parameter_number": 5,
+          "units": "deg/s²",
+          "notes": "Current acceleration in degrees per second squared"
+        },
+        {
+          "name": "current_step",
+          "type": "integer",
+          "parameter_number": 6,
+          "units": "",
+          "notes": "Current step count"
+        },
+        {
+          "name": "max_pos_acc",
+          "type": "float",
+          "parameter_number": 7,
+          "units": "deg/s²",
+          "notes": "Maximum positive acceleration in degrees per second squared"
+        },
+        {
+          "name": "max_neg_acc",
+          "type": "float",
+          "parameter_number": 8,
+          "units": "deg/s²",
+          "notes": "Maximum negative acceleration in degrees per second squared"
+        },
+        {
+          "name": "step_deg",
+          "type": "float",
+          "parameter_number": 9,
+          "units": "deg",
+          "notes": "Degrees per step"
+        },
+        {
+          "name": "max_pwm_freq",
+          "type": "float",
+          "parameter_number": 10,
+          "units": "Hz",
+          "notes": "Maximum PWM frequency in Hertz"
+        },
+        {
+          "name": "pause_pending",
+          "type": "boolean",
+          "parameter_number": 11,
+          "units": "",
+          "notes": "Pause pending flag: 1=pause requested, 0=no pause"
+        }
+      ]
+    },
+    "GET_ENCODER": {
+      "category": "Device Status",
+      "description": "Retrieve current position and status of a quadrature encoder.",
+      "param_count": 1,
+      "parameters": [
+        {
+          "name": "encoder_number",
+          "type": "integer",
+          "param_number": 1,
+          "range": {
+            "min": 1,
+            "max": 2,
+            "min_ignorable": false,
+            "max_ignorable": false
+          },
+          "units": ""
+        }
+      ],
+      "function": "handle_get_encoder",
+      "returns": [
+        {
+          "name": "encoder_number",
+          "type": "integer",
+          "parameter_number": 1,
+          "units": "",
+          "notes": "Encoder identifier (1 or 2)"
+        },
+        {
+          "name": "position",
+          "type": "integer",
+          "parameter_number": 2,
+          "units": "count",
+          "notes": "Current encoder position count"
+        },
+        {
+          "name": "index_armed",
+          "type": "boolean",
+          "parameter_number": 3,
+          "units": "",
+          "notes": "Index armed status: 1=armed, 0=disarmed"
+        }
+      ]
+    },
+    "CLR_WARN": {
+      "category": "Error Handling",
+      "description": "Clear a warning to allow guarded operations to proceed.",
+      "param_count": 2,
+      "parameters": [
+        {
+          "name": "motor_number",
+          "type": "enum",
+          "param_number": 1,
+          "options": ["DVR8833", "DVR882X", "HighPower"],
+          "condition": [],
+          "units": "",
+          "notes": "Stepper motor controller type to clear warning for."
+        },
+        {
+          "name": "warning_id",
+          "type": "integer",
+          "param_number": 2,
+          "range": {
+            "min": 0,
+            "max": 999999,
+            "min_ignorable": false,
+            "max_ignorable": false
+          },
+          "units": "",
+          "notes": "Unique warning identifier to clear. Obtained from warning message."
+        }
+      ],
+      "function": "handle_clr_warn"
+    },
+    "GET_ERROR_LOG": {
+      "category": "Error Handling",
+      "description": "Retrieve persistent error log (FATAL, SEVERE, WARNING).",
+      "param_count": 2,
+      "parameters": [
+        {
+          "name": "level_filter",
+          "type": "enum",
+          "param_number": 1,
+          "enum_values": ["ALL", "FATAL", "SEVERE", "WARNING"],
+          "optional": true,
+          "default": "ALL",
+          "condition": [],
+          "units": "",
+          "notes": "Filter by severity level or ALL for all levels."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "param_number": 2,
+          "range": {
+            "min": 1,
+            "max": 50,
+            "min_ignorable": false,
+            "max_ignorable": false
+          },
+          "optional": true,
+          "default": 10,
+          "units": "",
+          "notes": "Maximum number of entries to return (newest first)."
+        }
+      ],
+      "function": "handle_get_error_log"
+    },
+    "GET_DEBUG_LOG": {
+      "category": "Error Handling",
+      "description": "Retrieve volatile debug log (INFO, DEBUG).",
+      "param_count": 2,
+      "parameters": [
+        {
+          "name": "level_filter",
+          "type": "enum",
+          "param_number": 1,
+          "enum_values": ["ALL", "INFO", "DEBUG"],
+          "optional": true,
+          "default": "ALL",
+          "condition": [],
+          "units": "",
+          "notes": "Filter by severity level or ALL for all levels."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "param_number": 2,
+          "range": {
+            "min": 1,
+            "max": 100,
+            "min_ignorable": false,
+            "max_ignorable": false
+          },
+          "optional": true,
+          "default": 20,
+          "units": "",
+          "notes": "Maximum number of entries to return (newest first)."
+        }
+      ],
+      "function": "handle_get_debug_log"
+    },
+    "CLEAR_ERROR_LOG": {
+      "category": "Error Handling",
+      "description": "Clear persistent error log entries.",
+      "param_count": 1,
+      "parameters": [
+        {
+          "name": "level_filter",
+          "type": "enum",
+          "param_number": 1,
+          "enum_values": ["ALL", "FATAL", "SEVERE", "WARNING"],
+          "optional": true,
+          "default": "ALL",
+          "condition": [],
+          "units": "",
+          "notes": "Clear specific level or ALL for entire log."
+        }
+      ],
+      "function": "handle_clear_error_log"
+    },
+    "CLEAR_DEBUG_LOG": {
+      "category": "Error Handling",
+      "description": "Clear volatile debug log entries.",
+      "param_count": 1,
+      "parameters": [
+        {
+          "name": "level_filter",
+          "type": "enum",
+          "param_number": 1,
+          "enum_values": ["ALL", "INFO", "DEBUG"],
+          "optional": true,
+          "default": "ALL",
+          "condition": [],
+          "units": "",
+          "notes": "Clear specific level or ALL for entire log."
+        }
+      ],
+      "function": "handle_clear_debug_log"
+    },
+    "SET_TIME": {
+      "category": "System Administration",
+      "description": "Set wall clock time for ZULU timestamp mode.",
+      "param_count": 1,
+      "parameters": [
+        {
+          "name": "epoch_seconds",
+          "type": "float",
+          "param_number": 1,
+          "range": {
+            "min": 1609459200,
+            "max": 2147483647,
+            "min_ignorable": false,
+            "max_ignorable": false
+          },
+          "units": "seconds",
+          "notes": "Unix epoch timestamp (seconds since 1970-01-01 00:00:00 UTC)."
+        }
+      ],
+      "function": "handle_set_time"
+    },
+    "GET_TIME_STATUS": {
+      "category": "System Administration",
+      "description": "Retrieve timing system status.",
+      "param_count": 0,
+      "parameters": [],
+      "function": "handle_get_time_status"
     },
     "GET_ALL": {
+      "category": "Device Status",
       "description": "Retrieve all current shared states.",
       "param_count": 0,
       "parameters": [],

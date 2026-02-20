@@ -22,9 +22,11 @@ core/
         capstanDrive/
             capstanDrive_worker.py
             capstanDrive_handler.py
-            capstanDrive_commandDictionary.json
             capstanDrive_config.py
         ...
+shared_dictionaries/
+    command_dictionaries/
+        capstanDrive_commandDictionary.json
 docs/
     project_plan.md
     architecture.md
@@ -51,7 +53,8 @@ README.md
 
 ## Adding a New Device
 - Create a new subfolder in `core/workers/` for your device.
-- Add a worker, handler, config, and command dictionary as in `capstanDrive/`.
+- Add a worker, handler, and config file as in `capstanDrive/`.
+- Add the command dictionary to `shared_dictionaries/command_dictionaries/`.
 - Register the device in your server configuration.
 
 ## Documentation

@@ -63,7 +63,7 @@ def save_config(config):
 ---
 
 ## Device/Command Dictionary Management
-- Each device class has its own config and command dictionary in `core/workers/<device>/`.
+- Each device class has its own config file in `core/workers/<device>/` and command dictionary in `shared_dictionaries/command_dictionaries/`.
 - The config file defines device-specific settings; the dictionary defines commands and parameters.
 - Keep these files up to date and document any changes.
 - See `message_creator_panel.md` for how the UI uses these files.

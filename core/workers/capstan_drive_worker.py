@@ -8,18 +8,34 @@ class CapstanDriveWorker:
     def __init__(self, client_name="capstanDrive", mailbox=None):
         self.client_name = client_name
         self.command_dict = self.load_command_dict()
+        self.config = self.load_config()
         self.handler = CapstanDriveHandler(self)
         self.last_error = None
         self.mailbox = mailbox or queue.Queue()
 
     def load_command_dict(self):
         try:
-            with open(f"{self.client_name}_commandDictionary.json", "r") as f:
+            import os
+            dict_path = os.path.join(os.path.dirname(__file__), f"../../../../shared_dictionaries/command_dictionaries/{self.client_name}_commandDictionary.json")
+            with open(dict_path, "r") as f:
                 return json.load(f)["commands"]
         except Exception as e:
             self.last_error = f"Error loading command dictionary: {e}"
             logging.error(self.last_error)
             return {}
+    
+    def load_config(self):
+        try:
+            import importlib.util
+            import os
+            config_path = os.path.join(os.path.dirname(__file__), f"{self.client_name}/{self.client_name}_config.py")
+            spec = importlib.util.spec_from_file_location(f'{self.client_name}_config', config_path)
+            config_mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(config_mod)
+            return config_mod
+        except Exception as e:
+            logging.warning(f"Could not load config: {e}")
+            return None
 
     def register_handlers(self):
         pass  # Handlers are now managed by CapstanDriveHandler
@@ -71,7 +87,21 @@ class CapstanDriveWorker:
                 elif pdef["type"] == "float":
                     val = float(raw_val)
                 elif pdef["type"] == "boolean":
-                    val = bool(int(raw_val)) if raw_val in ("0", "1") else raw_val.lower() in ("true", "on")
+                    # Use BOOLEAN_CONFIG from config file if available
+                    if self.config and hasattr(self.config, 'BOOLEAN_CONFIG'):
+                        bool_config = self.config.BOOLEAN_CONFIG
+                        true_strings = [s.lower() for s in bool_config.get('true_strings', ['true', '1'])]
+                        false_strings = [s.lower() for s in bool_config.get('false_strings', ['false', '0'])]
+                        raw_lower = raw_val.lower()
+                        if raw_lower in true_strings:
+                            val = True
+                        elif raw_lower in false_strings:
+                            val = False
+                        else:
+                            return {"error": f"Invalid boolean value: {raw_val}"}
+                    else:
+                        # Fallback to default behavior
+                        val = bool(int(raw_val)) if raw_val in ("0", "1") else raw_val.lower() in ("true", "on")
                 elif pdef["type"] == "enum":
                     if raw_val not in pdef.get("options", []):
                         return {"error": f"Invalid enum value: {raw_val}"}

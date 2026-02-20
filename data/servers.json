@@ -3,7 +3,7 @@
         {
             "name": "capstanDrive",
             "clientName": "capstanDrive",
-            "host": "192.168.1.15",
+            "host": "192.168.1.244",
             "port": "2222",
             "description": "capstanDrive."
         },
@@ -26,10 +26,34 @@
         {
             "name": "capstanDrive",
             "clientName": "capstanDrive",
-            "host": "192.168.1.15",
+            "host": "192.168.200.195",
             "port": "2222",
             "description": "capstanDrive"
+        },
+        {
+            "name": "spoolerDrive",
+            "clientName": "spoolerDrive",
+            "host": "192.168.200.195",
+            "port": "2222",
+            "description": "spoolerDrive"
+        },
+        {
+            "name": "windowDrive",
+            "clientName": "windowDrive",
+            "host": "192.168.200.195",
+            "port": "2222",
+            "description": "windowDrive"
         }
     ],
-    "DNS": []
+    "DNS": [],
+    "Local": [
+        {
+            "name": "TestDevice",
+            "clientName": "capstanDrive",
+            "host": "127.0.0.1",
+            "port": "5000",
+            "description": "Test Edge Device",
+            "health_metrics": ["uptime", "temperature", "cpu", "memory"]
+        }
+    ]
 }

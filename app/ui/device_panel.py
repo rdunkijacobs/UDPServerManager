@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QComboBox, QLabel, QSizePolicy
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QAbstractScrollArea
+import config
 
 class DevicePanel(QWidget):
     from PySide6.QtCore import Signal
@@ -53,7 +54,7 @@ class DevicePanel(QWidget):
         layout.addWidget(self.device_table)
         self.setLayout(layout)
         # Set minimum width for the panel
-        self.setMinimumWidth(200)
+        self.setMinimumWidth(config.DEVICE_PANEL_WIDTH)
         # Connect location dropdown to update table
         self.location_selector.currentTextChanged.connect(self._on_location_changed)
         # Populate initial table
@@ -184,3 +185,38 @@ class DevicePanel(QWidget):
             self.device_table.setItem(i, 0, item_icon)
             name_item = QTableWidgetItem(desc)
             self.device_table.setItem(i, 1, name_item)
+    
+    def update_health_status(self, server_name, health_status, tooltip_text):
+        """Update the health status icon for a device.
+        
+        Args:
+            server_name: The name of the server to update
+            health_status: Status string ("OK", "WARNING", "CRITICAL", "FATAL")
+            tooltip_text: Tooltip text to display on hover
+        """
+        # Map health status to icon colors
+        status_icon_map = {
+            "OK": "green",
+            "WARNING": "yellow",
+            "CRITICAL": "orange",  # Falls back to red if orange doesn't exist
+            "FATAL": "red"
+        }
+        
+        icon_status = status_icon_map.get(health_status, "green")
+        
+        # If orange icon doesn't exist and status is CRITICAL, use red
+        if icon_status == "orange" and icon_status not in self.status_icons:
+            icon_status = "red"
+        
+        # Find the row for this server
+        location = self.location_selector.currentText()
+        servers = self.servers_by_location.get(location, [])
+        
+        for i, server in enumerate(servers):
+            if server.get("name") == server_name:
+                # Update the status icon (column 0)
+                status_item = self.device_table.item(i, 0)
+                if status_item:
+                    status_item.setIcon(self.status_icons.get(icon_status, self.status_icons["green"]))
+                    status_item.setToolTip(tooltip_text)
+                break
