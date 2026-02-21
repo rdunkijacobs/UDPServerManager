@@ -43,7 +43,7 @@ VERSION = "2.01"
 
 # Master enable/disable for entire health monitoring system
 # Set to False during initial development/debugging
-HEALTH_CHECK_ENABLED = True  # Enabled for health monitoring testing
+HEALTH_CHECK_ENABLED = False  # Disabled
 
 # Target interval for complete round-robin cycle (seconds)
 # Each registered worker checked once per cycle

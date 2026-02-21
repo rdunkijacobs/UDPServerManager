@@ -15,7 +15,11 @@
           "name": "led_number",
           "type": "enum",
           "param_number": 1,
-          "options": ["redLED", "greenLED", "blueLED"],
+          "options": [
+            {"value": "redLED", "tooltip": "Red LED indicator"},
+            {"value": "greenLED", "tooltip": "Green LED indicator"},
+            {"value": "blueLED", "tooltip": "Blue LED indicator"}
+          ],
           "condition": [],
           "units": "",
           "notes": "Required."
@@ -25,10 +29,10 @@
           "type": "enum",
           "param_number": 2,
           "options": [
-            "on_off",
-            "toggle",
-            "blink",
-            "flash"
+            {"value": "on_off", "tooltip": "Set LED to specific on/off state"},
+            {"value": "toggle", "tooltip": "Toggle LED between on and off"},
+            {"value": "blink", "tooltip": "Blink LED a specified number of times"},
+            {"value": "flash", "tooltip": "Flash LED continuously at specified frequency"}
           ],
           "condition": [],
           "units": "",
@@ -141,8 +145,8 @@
           "type": "enum",
           "param_number": 2,
           "options": [
-            "on_off",
-            "toggle"
+            {"value": "on_off", "tooltip": "Set HPL output to specific on/off state"},
+            {"value": "toggle", "tooltip": "Toggle HPL output between on and off"}
           ],
           "condition": [],
           "units": "",
@@ -171,7 +175,11 @@
           "name": "motor_number",
           "type": "enum",
           "param_number": 1,
-          "options": ["DVR8833", "DVR882X", "HighPower"],
+          "options": [
+            {"value": "DVR8833", "tooltip": "DVR8833: Dual H-Bridge motor driver, 1.5A per channel"},
+            {"value": "DVR882X", "tooltip": "DVR882X: Advanced motor driver with current sensing"},
+            {"value": "HighPower", "tooltip": "HighPower: High-current motor driver for larger stepper motors"}
+          ],
           "condition": [],
           "units": "",
           "notes": "Required. 1=DVR8833, 2=DVR882X, 3=HighPower"
@@ -181,18 +189,18 @@
           "type": "enum",
           "param_number": 2,
           "options": [
-            "cw",
-            "ccw",
-            "brake",
-            "coast",
-            "stop",
-            "pause",
-            "resume",
-            "reset",
-            "pulse",
-            "pwl",
-            "vpid",
-            "ppid"
+            {"value": "cw", "tooltip": "Clockwise: Rotate motor clockwise at constant speed"},
+            {"value": "ccw", "tooltip": "Counter-clockwise: Rotate motor counter-clockwise at constant speed"},
+            {"value": "brake", "tooltip": "Brake: Actively stop motor by shorting coils (dynamic braking)"},
+            {"value": "coast", "tooltip": "Coast: Allow motor to spin freely without power (no braking)"},
+            {"value": "stop", "tooltip": "Stop: Terminate current motion command and hold position"},
+            {"value": "pause", "tooltip": "Pause: Temporarily halt motion, can be resumed later"},
+            {"value": "resume", "tooltip": "Resume: Continue motion after pause"},
+            {"value": "reset", "tooltip": "Reset: Zero position or acceleration counters"},
+            {"value": "pulse", "tooltip": "Pulse: Apply velocity pulse with configurable rise/fall times"},
+            {"value": "pwl", "tooltip": "PWL (Piecewise Linear): Accelerate to target velocity with linear ramp"},
+            {"value": "vpid", "tooltip": "Velocity PID: Maintain target velocity using PID control"},
+            {"value": "ppid", "tooltip": "Position PID: Move to target position using PID control"}
           ],
           "condition": [],
           "units": "",
@@ -220,8 +228,8 @@
           "type": "enum",
           "param_number": 3,
           "options": [
-            "position",
-            "acceleration"
+            {"value": "position", "tooltip": "Reset position counter to zero"},
+            {"value": "acceleration", "tooltip": "Reset acceleration profile and limits"}
           ],
           "condition": [
             "mode == reset"
@@ -246,8 +254,8 @@
           "type": "enum",
           "param_number": 3,
           "options": [
-            "nL",
-            "nH"
+            {"value": "nL", "tooltip": "Negative-Low: Add delta_v to current velocity (speed up)"},
+            {"value": "nH", "tooltip": "Negative-High: Subtract delta_v from current velocity (slow down)"}
           ],
           "condition": [
             "mode == pulse"
@@ -379,7 +387,12 @@
           "name": "option_type",
           "type": "enum",
           "param_number": 5,
-          "options": ["tC","tN","rev","revN"],
+          "options": [
+            {"value": "tC", "tooltip": "Time at constant velocity: Duration in seconds at final velocity"},
+            {"value": "tN", "tooltip": "Net time at constant velocity: Duration (time - tA) in seconds at final velocity"},
+            {"value": "rev", "tooltip": "Revolutions at constant velocity: Number of revolutions at final velocity"},
+            {"value": "revN", "tooltip": "Net revolutions at constant velocity: Number of revolutions accounting for acceleration phase"}
+          ],
           "condition": [
             "mode == pwl"
           ],
@@ -461,8 +474,8 @@
           "type": "enum",
           "param_number": 7,
           "options": [
-            "time",
-            "revolutions"
+            {"value": "time", "tooltip": "Time-based: Pulse duration measured in seconds"},
+            {"value": "revolutions", "tooltip": "Revolution-based: Pulse duration measured in motor revolutions"}
           ],
           "condition": [
             "mode == pulse"
@@ -545,35 +558,35 @@
     },
     "ENCODER": {
       "category": "Device Control",
-      "description": "Control quadrature encoder (reset, arm index, set position).",
+      "description": "Access quadrature encoder (reset, arm index, set position).",
       "param_count": 3,
       "parameters": [
         {
           "name": "encoder_number",
-          "type": "integer",
+          "type": "enum",
           "param_number": 1,
-          "range": {
-            "min": 1,
-            "max": 2,
-            "min_ignorable": false,
-            "max_ignorable": false
-          },
-          "options": [],
+
+          "options": [
+            {"value": "A", "tooltip": "Encoder A: Primary quadrature encoder"},
+            {"value": "B", "tooltip": "Encoder B: Secondary quadrature encoder"}
+          ],
           "condition": [],
-          "units": ""
+          "units": "",
+          "notes": "Required. Use the text of the enum option to specify the encoder (e.g. 'A' or 'B')."
         },
         {
-          "name": "command",
+          "name": "mode",
           "type": "enum",
           "param_number": 2,
           "options": [
-            "reset",
-            "arm_index",
-            "disarm_index",
-            "set_position"
+            {"value": "reset", "tooltip": "Reset: Zero the encoder position counter"},
+            {"value": "arm", "tooltip": "Arm: Enable index pulse to automatically reset position"},
+            {"value": "disarm", "tooltip": "Disarm: Disable index pulse automatic reset"},
+            {"value": "position", "tooltip": "Position: Set encoder position to specific count value"}
           ],
           "condition": [],
-          "units": ""
+          "units": "",
+          "notes":"Mode: zero position, index pulse to resets position, disable index pulse, position: set current position to value. Parameter is the text of the enum option."
         },
         {
           "name": "value",
@@ -587,9 +600,10 @@
           },
           "options": [],
           "condition": [
-            "command == set_position"
+            "mode == position"
           ],
-          "units": ""
+          "units": "counts",
+          "notes": "number of counts to preset the counter to"
         }
       ],
       "function": "handle_encoder"
@@ -805,7 +819,7 @@
           "name": "position",
           "type": "integer",
           "parameter_number": 2,
-          "units": "count",
+          "units": "counts",
           "notes": "Current encoder position count"
         },
         {
@@ -826,7 +840,11 @@
           "name": "motor_number",
           "type": "enum",
           "param_number": 1,
-          "options": ["DVR8833", "DVR882X", "HighPower"],
+          "options": [
+            {"value": "DVR8833", "tooltip": "DVR8833: Dual H-Bridge motor driver, 1.5A per channel"},
+            {"value": "DVR882X", "tooltip": "DVR882X: Advanced motor driver with current sensing"},
+            {"value": "HighPower", "tooltip": "HighPower: High-current motor driver for larger stepper motors"}
+          ],
           "condition": [],
           "units": "",
           "notes": "Stepper motor controller type to clear warning for."
@@ -856,8 +874,12 @@
           "name": "level_filter",
           "type": "enum",
           "param_number": 1,
-          "enum_values": ["ALL", "FATAL", "SEVERE", "WARNING"],
-          "optional": true,
+          "options": [
+            {"value": "ALL", "tooltip": "All error levels: FATAL, SEVERE, and WARNING"},
+            {"value": "FATAL", "tooltip": "Fatal errors: Critical failures requiring restart"},
+            {"value": "SEVERE", "tooltip": "Severe errors: Major problems affecting functionality"},
+            {"value": "WARNING", "tooltip": "Warnings: Issues that may cause problems but allow continued operation"}
+          ],
           "default": "ALL",
           "condition": [],
           "units": "",
@@ -873,7 +895,6 @@
             "min_ignorable": false,
             "max_ignorable": false
           },
-          "optional": true,
           "default": 10,
           "units": "",
           "notes": "Maximum number of entries to return (newest first)."
@@ -890,8 +911,11 @@
           "name": "level_filter",
           "type": "enum",
           "param_number": 1,
-          "enum_values": ["ALL", "INFO", "DEBUG"],
-          "optional": true,
+          "options": [
+            {"value": "ALL", "tooltip": "All debug levels: INFO and DEBUG messages"},
+            {"value": "INFO", "tooltip": "Info messages: General informational messages about operation"},
+            {"value": "DEBUG", "tooltip": "Debug messages: Detailed diagnostic information for troubleshooting"}
+          ],
           "default": "ALL",
           "condition": [],
           "units": "",
@@ -907,7 +931,6 @@
             "min_ignorable": false,
             "max_ignorable": false
           },
-          "optional": true,
           "default": 20,
           "units": "",
           "notes": "Maximum number of entries to return (newest first)."
@@ -924,8 +947,12 @@
           "name": "level_filter",
           "type": "enum",
           "param_number": 1,
-          "enum_values": ["ALL", "FATAL", "SEVERE", "WARNING"],
-          "optional": true,
+          "options": [
+            {"value": "ALL", "tooltip": "Clear all error levels: FATAL, SEVERE, and WARNING"},
+            {"value": "FATAL", "tooltip": "Clear fatal errors only"},
+            {"value": "SEVERE", "tooltip": "Clear severe errors only"},
+            {"value": "WARNING", "tooltip": "Clear warnings only"}
+          ],
           "default": "ALL",
           "condition": [],
           "units": "",
@@ -943,8 +970,11 @@
           "name": "level_filter",
           "type": "enum",
           "param_number": 1,
-          "enum_values": ["ALL", "INFO", "DEBUG"],
-          "optional": true,
+          "options": [
+            {"value": "ALL", "tooltip": "Clear all debug levels: INFO and DEBUG messages"},
+            {"value": "INFO", "tooltip": "Clear info messages only"},
+            {"value": "DEBUG", "tooltip": "Clear debug messages only"}
+          ],
           "default": "ALL",
           "condition": [],
           "units": "",
@@ -953,40 +983,21 @@
       ],
       "function": "handle_clear_debug_log"
     },
-    "SET_TIME": {
-      "category": "System Administration",
-      "description": "Set wall clock time for ZULU timestamp mode.",
-      "param_count": 1,
-      "parameters": [
-        {
-          "name": "epoch_seconds",
-          "type": "float",
-          "param_number": 1,
-          "range": {
-            "min": 1609459200,
-            "max": 2147483647,
-            "min_ignorable": false,
-            "max_ignorable": false
-          },
-          "units": "seconds",
-          "notes": "Unix epoch timestamp (seconds since 1970-01-01 00:00:00 UTC)."
-        }
-      ],
-      "function": "handle_set_time"
-    },
-    "GET_TIME_STATUS": {
-      "category": "System Administration",
-      "description": "Retrieve timing system status.",
-      "param_count": 0,
-      "parameters": [],
-      "function": "handle_get_time_status"
-    },
     "GET_ALL": {
       "category": "Device Status",
       "description": "Retrieve all current shared states.",
       "param_count": 0,
       "parameters": [],
       "function": "handle_get_all"
+    },
+    "GET_STATUS": {
+      "category": "Device Status",
+      "description": "Request device health metrics (uptime, CPU usage, memory usage, temperature).",
+      "param_count": 0,
+      "parameters": [],
+      "function": "handle_status_command",
+      "return_format": "STATUS:device=name:uptime=XXXs:cpu=XX%:memory=XX%:temperature=XXC",
+      "notes": "Returns comprehensive device health metrics. Optimized for v2.01 health monitoring - metrics removed from PING/PONG protocol for minimal payload. Request separately when detailed metrics needed."
     }
   }
 }
