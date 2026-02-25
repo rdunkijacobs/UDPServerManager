@@ -43,7 +43,7 @@
 1. **Select Device:** Click device panel on left (200px width)
 2. **Choose Command:** Click "SELECT COMMAND" button → choose category → select command
 3. **Configure Parameters:** Fill in up to 10 parameters as needed
-4. **Send Message:** Click "SEND MESSAGE" button on right
+4. **Send Message:** Click "SEND" button on right
 5. **View Response:** Check logging panel at bottom (200px height)
 
 ---
@@ -68,13 +68,6 @@ The application uses a **three-tier layout**:
 - Real-time UDP traffic logging
 - Sent messages and received responses
 - Error messages and warnings
-
-### Window Management
-
-- **Automatic Positioning:** Window position saved on close
-- **Size Persistence:** Window dimensions restored on launch
-- **Last Device Memory:** Previously selected device auto-selected
-- **Preferences:** Stored in user config file
 
 ---
 
@@ -184,7 +177,7 @@ Each device type has configuration in `core/workers/[device_type]/`:
    - Number of fields depends on command (0-10 parameters)
    
 5. **Send Message**
-   - Click "SEND MESSAGE" button on right
+   - Click "SEND" button on right
    - Message sent to active device
 
 **See Also:** `command_menu_system.md` for detailed customization guide.
@@ -360,7 +353,7 @@ status_panel.set_video("http://example.com/stream", is_stream=True)
 
 ### Message Flow
 
-1. **User Action:** Select command, fill parameters, click "SEND MESSAGE"
+1. **User Action:** Select command, fill parameters, click "SEND"
 2. **Message Assembly:** Handler formats command string
 3. **UDP Transmission:** Message sent to device IP:port
 4. **Device Processing:** Device receives, processes, responds

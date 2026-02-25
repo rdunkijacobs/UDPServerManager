@@ -285,12 +285,12 @@ Instance: redLED | greenLED | blueLED
 
 **Format:**
 ```
-COMMAND instance param1 param2 param3 ...
+COMMAND,param1,param2,param3,...
 ```
 
 **Example:**
 ```
-LED redLED blink 5 500
+LED,redLED,blink,5,500
 ```
 (LED command, red LED, blink mode, 5 blinks, 500ms duration)
 
@@ -506,17 +506,27 @@ Provides command transmission control and displays request/response information.
 
 **Behavior:**
 - Click to send current command from Message Creator
-- Button disabled when:
-  - No device selected
-  - Message validation fails
-  - Previous command still pending (optional)
+- Blocked if any required parameter contains `□` (fill in all fields first)
 - Click triggers:
   - Command sent via UDP
   - Request box updated
   - Reply box cleared (awaiting response)
+  - ABORT timer started
   - Log entry created
 
-#### 2. Request Box
+#### 2. ABORT Button
+
+**Appearance:** Red button next to SEND
+**Size:** 80 x 40 pixels
+**Function:** Cancel a pending command and clear the reply box
+
+**Behavior:**
+- Disabled by default
+- Enables 1.5 seconds after SEND (prevents accidental clicks)
+- Auto-disables if a reply arrives before the timer fires
+- Click logs `[ABORTED]`, clears reply box, disables button
+
+#### 3. Request Box
 
 **Purpose:** Display most recently sent command
 
@@ -529,15 +539,15 @@ Provides command transmission control and displays request/response information.
 
 **Format:**
 ```
-Sent: COMMAND instance param1 param2 ...
+Sent: COMMAND,param1,param2,...
 ```
 
 **Example:**
 ```
-Sent: LED redLED blink 5 500
+Sent: LED,redLED,blink,5,500
 ```
 
-#### 3. Reply Box
+#### 4. Reply Box
 
 **Purpose:** Display device response to sent command
 
@@ -557,11 +567,11 @@ Sent: LED redLED blink 5 500
 
 **Example Responses:**
 ```
-OK: LED redLED blink started
+capstanDrive: OK
 
-ERROR: Invalid parameter range
+capstanDrive: ERROR invalid parameter
 
-STATUS: Temperature=45C, Voltage=12.3V
+capstanDrive: STEPPER,running,1000,forward
 ```
 
 ### User Interaction Flow
@@ -570,8 +580,8 @@ STATUS: Temperature=45C, Voltage=12.3V
 2. User reviews assembled message
 3. User clicks SEND button
 4. Request box shows sent command
-5. Reply box clears and waits for response
-6. Device response appears in reply box
+5. Reply box clears; ABORT button arms after 1.5s
+6. Device response appears in reply box; ABORT disarms
 7. Log panel records transaction
 
 ---
@@ -615,8 +625,8 @@ Provides comprehensive logging of all application and network activities for deb
 ```
 [UDP] Connecting to 192.168.1.100:5555...
 [UDP] Connected successfully (local port 54321)
-[UDP] Sent: LED redLED on
-[UDP] Received from 192.168.1.100:5555: OK
+[UDP] Sent: LED,redLED,on
+[UDP] From capstanDrive: OK
 [UDP] Connection closed
 ```
 

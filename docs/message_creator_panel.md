@@ -38,7 +38,7 @@ The **Message Creator Panel** is a dynamic, adaptive UI component that enables u
 - **Position:** Center panel in top tier (Interactive Area)
 - **Height:** 350px (reduced from 700px in v1.0)
 - **Width:** Flexible, between Device Panel (200px) and Send Panel
-- **File:** `app/ui/message_creator_panel.py`
+- **File:** `core/workers/capstanDrive/message_creator_panel.py`
 
 ---
 
@@ -65,7 +65,7 @@ The **Message Creator Panel** is a dynamic, adaptive UI component that enables u
    - Assemble message string dynamically
 
 4. **Message Transmission:**
-   - User clicks "SEND MESSAGE" button (in Send Panel)
+   - User clicks "SEND" button (in Send Panel)
    - Validate all required parameters filled
    - Format message according to protocol
    - Emit signal to worker for transmission
@@ -394,14 +394,14 @@ def _update_parameter_widgets(self):
 
 **Standard Format:**
 ```
-COMMAND:param0:param1:param2:...:param9
+COMMAND,param1,param2,...
 ```
 
 **Example:**
 ```
-LED:2:500      ← LED command, mode=2 (BLINK), rate=500ms
-STEPPER:1000:1 ← STEPPER command, steps=1000, direction=1 (forward)
-GET_ALL:       ← GET_ALL command, no parameters
+LED,redLED,blink,5,500     ← LED command, red LED, blink mode, 5 blinks, 500ms
+STEPPER,1000,forward       ← STEPPER command, steps=1000, direction=forward
+GET_ALL                    ← GET_ALL command, no parameters
 ```
 
 ### Assembly Process

@@ -359,17 +359,19 @@ main_window.update_status_video('path/to/tutorial.mp4')
 
 ### Raspberry Pi 4B Integration
 
-**Planned Architecture:**
+**Current Architecture:**
 ```
-PC Supervisor ←→ [Network] ←→ Pi 4B Edge Devices
-     ↑                              ↑
-     ↓                              ↓
-Status Panel                    Pi Camera Module
-Video Display                   Video Streaming Server
-                                Hardware H.264 Encoding
+PC Supervisor ←→ [UDP] ←→ Pi 4B Edge Devices
+     ↑            ↕           ↑
+     ↓           [TCP]        ↓
+Status Panel             File Transfer
 ```
 
-**Key Additions:**
+**Protocol Split:**
+- **UDP (port 2222):** Real-time commands and replies — low latency, fire-and-forget
+- **TCP:** File transfer (images, logs, firmware) — reliable delivery
+
+**Planned Additions:**
 - Real-time video streaming from Pi Camera modules
 - WebRTC support for ultra-low latency (<100ms)
 - Multi-camera management and layout controls
