@@ -18,6 +18,7 @@ import config
 # Import refactored panels
 from .device_panel import DevicePanel
 from .status_panel import StatusPanel
+from .macro_dialog import MacroDialog
 from core.workers.capstanDrive.message_creator_panel import MessageCreatorPanel
 
 # Import UDPClientThread for UDP networking
@@ -143,6 +144,12 @@ class MainWindow(QMainWindow):
         self.abort_button.clicked.connect(self.on_abort_button_clicked)
         self._last_sent_message = None
 
+        # --- Macro button ---
+        self.macro_button = QPushButton("MACRO")
+        self.macro_button.setFixedHeight(config.SEND_BUTTON_HEIGHT)
+        self.macro_button.setToolTip("Open Macro Manager — record and step-run command sequences")
+        self.macro_button.clicked.connect(self.on_macro_button_clicked)
+
         # --- IP-to-device-name lookup (built from servers.json) ---
         self._ip_name_map = {}
         for servers in self.servers_by_location.values():
@@ -151,6 +158,10 @@ class MainWindow(QMainWindow):
                 name = s.get("name")
                 if host and name:
                     self._ip_name_map[host] = name
+
+        # --- Macro dialog (kept as a reference so replies can be forwarded) ---
+        self._current_device_name = ""
+        self.macro_dialog = None
 
         # --- Delayed abort enable timer (1.5 s after send) ---
         self._abort_pending = False
@@ -207,6 +218,7 @@ class MainWindow(QMainWindow):
         send_abort_layout.addWidget(self.send_button)
         send_abort_layout.addWidget(self.abort_button)
         right_layout.addLayout(send_abort_layout)
+        right_layout.addWidget(self.macro_button)
         right_layout.addWidget(QLabel("Request:"))
         right_layout.addWidget(self.request_box)
         right_layout.addWidget(QLabel("Reply:"))
@@ -290,6 +302,9 @@ class MainWindow(QMainWindow):
             self._abort_pending = False
             self._abort_enable_timer.stop()
             self.abort_button.setEnabled(False)
+            # Forward to macro dialog if it is open and awaiting a step reply
+            if self.macro_dialog is not None and self.macro_dialog.isVisible():
+                self.macro_dialog.receive_reply(msg)
 
     def clear_reply_box(self):
         """Clear the reply box when user changes any input."""
@@ -297,6 +312,19 @@ class MainWindow(QMainWindow):
         self._abort_pending = False
         self._abort_enable_timer.stop()
         self.abort_button.setEnabled(False)
+
+    def on_macro_button_clicked(self):
+        """Open (or raise) the Macro Manager dialog."""
+        if self.macro_dialog is None or not self.macro_dialog.isVisible():
+            self.macro_dialog = MacroDialog(
+                get_current_message=lambda: self.message_creator_panel.assembled_output.text(),
+                send_fn=self.send_udp_message,
+                device_name=self._current_device_name,
+                parent=self,
+            )
+        self.macro_dialog.show()
+        self.macro_dialog.raise_()
+        self.macro_dialog.activateWindow()
 
     def on_abort_button_clicked(self):
         """Abandon the last sent message — no reply expected."""
@@ -371,6 +399,7 @@ class MainWindow(QMainWindow):
         port = server.get("port")
         server_name = server.get('name', 'Unnamed')
         if host and port:
+            self._current_device_name = server_name
             self.log_panel.append(f"Connecting to {host}:{port}...")
             self.log_panel.ensureCursorVisible()
             self.udp_thread = UDPClientThread(host, port, server_name)
@@ -420,6 +449,7 @@ class MainWindow(QMainWindow):
                 if hasattr(self, 'manual_check_button'):
                     self.manual_check_button.setEnabled(False)
         
+        self._current_device_name = ""
         # Stop UDP thread if nothing selected
         if hasattr(self, "udp_thread") and self.udp_thread is not None:
             self.udp_thread.stop()
