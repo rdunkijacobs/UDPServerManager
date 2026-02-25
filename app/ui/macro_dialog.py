@@ -8,9 +8,16 @@ Lifecycle:
        tagged with the current device name and an ISO timestamp.
     4. Load any saved macro from the "Saved:" dropdown.  The editor is fully
        editable — add, delete, or reorder lines freely.
-    5. Click "▶ Step Send" to fire the current command.  The button disables
-       until a reply arrives (forwarded by MainWindow.log_reply).  Then click
-       again for the next command.  "■ Reset" returns to step 1.
+    5. Click "▶ Step Send" to start.  Steps auto-advance based on type:
+
+       Normal command (e.g. STEPPER,home)
+           Sent to device; auto-advances when OK reply arrives.
+       wait,<n>  (e.g. wait,5)
+           Counts down n seconds then auto-advances.  No device traffic.
+       enter
+           Pauses.  Button becomes "▶ Continue"; click when ready.
+
+    "■ Reset" returns to step 1 at any time.
 
 Macros are per-device: only macros recorded for the currently selected device
 appear in the dropdown.
@@ -34,7 +41,7 @@ from PySide6.QtWidgets import (
     QTextEdit,
     QVBoxLayout,
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 
 # Path to the macros storage file, relative to this module.
 _MACROS_FILE = os.path.normpath(
@@ -87,7 +94,14 @@ class MacroDialog(QDialog):
         # Step-run state
         self._step_index = 0
         self._step_lines = []
-        self._awaiting_reply = False
+        self._awaiting_reply = False   # normal command sent, waiting for UDP reply
+        self._awaiting_enter = False   # on 'enter' step, waiting for user click
+        self._wait_remaining = 0       # seconds left in a 'wait,n' step
+
+        # 1-second countdown timer used by 'wait,n' steps
+        self._wait_timer = QTimer(self)
+        self._wait_timer.setInterval(1000)
+        self._wait_timer.timeout.connect(self._on_wait_tick)
 
         self.setWindowTitle(f"Macro Manager — {device_name or 'No device selected'}")
         self.setMinimumWidth(500)
@@ -137,7 +151,7 @@ class MacroDialog(QDialog):
         root.addWidget(QLabel("Commands (one per line):"))
         self.command_editor = QPlainTextEdit()
         self.command_editor.setPlaceholderText(
-            "STEPPER,stop\nLED,redLED,off\nSTEPPER,home"
+            "STEPPER,stop\nwait,2\nLED,redLED,off\nenter\nSTEPPER,home"
         )
         self.command_editor.setMinimumHeight(180)
         self.command_editor.textChanged.connect(self._on_editor_changed)
@@ -335,38 +349,32 @@ class MacroDialog(QDialog):
         self._update_step_display()
 
     def _on_step_send(self):
-        """Fire the current step command and wait for a reply."""
-        if self._awaiting_reply:
-            return  # Must wait for reply (or reset) before advancing
+        """Start the macro (first click) or resume after an 'enter' pause."""
+        if self._awaiting_reply or self._wait_timer.isActive():
+            return  # Shouldn't be reachable; button is disabled during these states
 
-        # Re-parse lines in case the editor was edited since last step
-        lines = [
-            ln.strip()
-            for ln in self.command_editor.toPlainText().splitlines()
-            if ln.strip()
-        ]
-        if not lines:
+        if self._awaiting_enter:
+            # User acknowledged the 'enter' pause — advance and run next step
+            self._awaiting_enter = False
+            self.step_reply.clear()
+            self.step_btn.setText("▶  Step Send")
+            self._step_index += 1
+            self._execute_current_step()
             return
 
-        self._step_lines = lines
-
-        if self._step_index >= len(self._step_lines):
-            self.step_reply.setPlainText("All commands sent.  Click ■ Reset to run again.")
-            return
-
-        cmd = self._step_lines[self._step_index]
-        self.send_fn(cmd)
-        self._awaiting_reply = True
-        self.step_btn.setEnabled(False)
-        self.step_reply.setPlainText("Waiting for reply…")
-        self._update_step_display()
+        # Normal (re)start — begin executing from current index
+        self._execute_current_step()
 
     def _on_reset(self):
         """Return to step 1."""
+        self._wait_timer.stop()
         self._step_index = 0
         self._step_lines = []
         self._awaiting_reply = False
+        self._awaiting_enter = False
+        self._wait_remaining = 0
         self.step_btn.setEnabled(True)
+        self.step_btn.setText("▶  Step Send")
         self.step_reply.clear()
         self._update_step_display()
 
@@ -385,7 +393,82 @@ class MacroDialog(QDialog):
             self.step_label.setText(f"Step: done ({total}/{total})")
             return
         cmd = lines[self._step_index]
-        self.step_label.setText(f"[{self._step_index + 1}/{total}]  {cmd}")
+        if self._is_enter_step(cmd):
+            icon = "⏸ "
+        elif self._parse_wait_secs(cmd) is not None:
+            icon = "⏱ "
+        else:
+            icon = ""
+        self.step_label.setText(f"[{self._step_index + 1}/{total}]  {icon}{cmd}")
+
+    # ------------------------------------------------------------------
+    # Step-type helpers
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _is_enter_step(cmd):
+        """Return True if cmd is the 'enter' pause directive."""
+        return cmd.strip().lower() == "enter"
+
+    @staticmethod
+    def _parse_wait_secs(cmd):
+        """Return wait duration in seconds if cmd is 'wait,<n>', else None."""
+        m = re.match(r"^wait[,\s]+(\d+(?:\.\d+)?)$", cmd.strip(), re.IGNORECASE)
+        return float(m.group(1)) if m else None
+
+    def _execute_current_step(self):
+        """Dispatch execution for the step at self._step_index.
+
+        Called by _on_step_send (initial / enter-resume) and automatically
+        after a normal command reply or a wait countdown completes.
+        """
+        # Refresh lines in case editor was edited mid-run
+        lines = [
+            ln.strip()
+            for ln in self.command_editor.toPlainText().splitlines()
+            if ln.strip()
+        ]
+        self._step_lines = lines
+        self._update_step_display()
+
+        if self._step_index >= len(lines):
+            self.step_reply.setPlainText("✓ All steps complete.  Click ■ Reset to run again.")
+            self.step_btn.setEnabled(False)
+            self.step_btn.setText("▶  Step Send")
+            return
+
+        cmd = lines[self._step_index]
+
+        if self._is_enter_step(cmd):
+            self._awaiting_enter = True
+            self.step_btn.setEnabled(True)
+            self.step_btn.setText("▶  Continue")
+            self.step_reply.setPlainText("Paused — press ▶ Continue when ready.")
+
+        elif (secs := self._parse_wait_secs(cmd)) is not None:
+            self._wait_remaining = max(1, int(round(secs)))
+            self.step_btn.setEnabled(False)
+            self.step_reply.setPlainText(f"Waiting {self._wait_remaining}s…")
+            self._wait_timer.start()
+
+        else:
+            # Normal command — send and wait for UDP reply (auto-advances)
+            self.send_fn(cmd)
+            self._awaiting_reply = True
+            self.step_btn.setEnabled(False)
+            self.step_btn.setText("▶  Step Send")
+            self.step_reply.setPlainText("Waiting for reply…")
+
+    def _on_wait_tick(self):
+        """Called every second during a 'wait,n' step."""
+        self._wait_remaining -= 1
+        if self._wait_remaining <= 0:
+            self._wait_timer.stop()
+            self.step_reply.clear()
+            self._step_index += 1
+            self._execute_current_step()
+        else:
+            self.step_reply.setPlainText(f"Waiting {self._wait_remaining}s…")
 
     # ------------------------------------------------------------------
     # Called by MainWindow when a UDP reply arrives
@@ -412,6 +495,5 @@ class MacroDialog(QDialog):
         self.step_reply.setPlainText(payload)
         self._awaiting_reply = False
         self._step_index += 1
-        self._update_step_display()
-        # Re-enable Step Send unless we've finished the list
-        self.step_btn.setEnabled(self._step_index < len(self._step_lines))
+        # Auto-advance to the next step
+        self._execute_current_step()
