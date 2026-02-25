@@ -17,8 +17,8 @@
           "param_number": 1,
           "options": [
             {"value": "redLED", "tooltip": "Red LED indicator"},
-            {"value": "greenLED", "tooltip": "Green LED indicator"},
-            {"value": "blueLED", "tooltip": "Blue LED indicator"}
+            {"value": "blueLED", "tooltip": "Blue LED indicator"},
+            {"value": "greenLED", "tooltip": "Green LED indicator"}
           ],
           "condition": [],
           "units": "",
@@ -197,6 +197,8 @@
             {"value": "pause", "tooltip": "Pause: Temporarily halt motion, can be resumed later"},
             {"value": "resume", "tooltip": "Resume: Continue motion after pause"},
             {"value": "reset", "tooltip": "Reset: Zero position or acceleration counters"},
+            {"value": "pwrON", "tooltip": "Power ON: Turn Stepper Power ON to motor (if supported)"},
+            {"value": "pwrOFF", "tooltip": "Power OFF:Turn Stepper Power OFF to motor (if supported)"},
             {"value": "pulse", "tooltip": "Pulse: Apply velocity pulse with configurable rise/fall times"},
             {"value": "pwl", "tooltip": "PWL (Piecewise Linear): Accelerate to target velocity with linear ramp"},
             {"value": "vpid", "tooltip": "Velocity PID: Maintain target velocity using PID control"},
@@ -615,13 +617,16 @@
       "parameters": [
         {
           "name": "led_number",
-          "type": "integer",
+          "type": "enum",
           "param_number": 1,
-          "range": {
-            "min": 1,
-            "max": 8
-          },
-          "units": ""
+          "options": [
+            {"value": "redLED", "tooltip": "Red LED indicator"},
+            {"value": "greenLED", "tooltip": "Green LED indicator"},
+            {"value": "blueLED", "tooltip": "Blue LED indicator"}
+          ],
+          "condition": [],
+          "units": "",
+          "notes": "Required."
         }
       ],
       "function": "handle_get_led",
@@ -698,13 +703,16 @@
       "parameters": [
         {
           "name": "motor_number",
-          "type": "integer",
+          "type": "enum",
           "param_number": 1,
-          "range": {
-            "min": 1,
-            "max": 4
-          },
-          "units": ""
+          "options": [
+            {"value": "DVR8833", "tooltip": "DVR8833: Dual H-Bridge motor driver, 1.5A per channel"},
+            {"value": "DVR882X", "tooltip": "DVR882X: Advanced motor driver with current sensing"},
+            {"value": "HighPower", "tooltip": "HighPower: High-current motor driver for larger stepper motors"}
+          ],
+          "condition": [],
+          "units": "",
+          "notes": "Required. 1=DVR8833, 2=DVR882X, 3=HighPower Use the text of the enum option to specify the type."
         }
       ],
       "function": "handle_get_stepper",
@@ -795,15 +803,15 @@
       "parameters": [
         {
           "name": "encoder_number",
-          "type": "integer",
+          "type": "enum",
           "param_number": 1,
-          "range": {
-            "min": 1,
-            "max": 2,
-            "min_ignorable": false,
-            "max_ignorable": false
-          },
-          "units": ""
+          "options": [
+            {"value": "A", "tooltip": "Encoder A: Primary quadrature encoder"},
+            {"value": "B", "tooltip": "Encoder B: Secondary quadrature encoder"}
+          ],
+          "condition": [],
+          "units": "",
+          "notes": "Required. Use the text of the enum option to specify the encoder (e.g. 'A' or 'B')"
         }
       ],
       "function": "handle_get_encoder",

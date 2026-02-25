@@ -1,11 +1,10 @@
 
 import socket
 from PySide6.QtCore import QThread, Signal
-from core.workers.capstanDrive.capstanDrive_worker import CapstanDriveWorker
 
 class UDPClientThread(QThread):
     message_received = Signal(str)
-    pong_received = Signal(str, float, dict)  # NEW: worker_name, ping_time, additional_info
+    pong_received = Signal(str, float, dict)  # worker_name, ping_time, additional_info
 
     def __init__(self, host, port, client_name=None):
         super().__init__()
@@ -13,9 +12,8 @@ class UDPClientThread(QThread):
         self.port = int(port)
         self.client_name = client_name
         self.running = True
-        self.worker = CapstanDriveWorker(client_name) if client_name == "capstanDrive" else None
         self.sock = None  # Will be created in run()
-        self.pending_pings = {}  # NEW: Track pending pings {ping_time: True}
+        self.pending_pings = {}  # Track pending pings keyed by tracking key
 
     def send_message(self, msg):
         """Send a message over UDP using the same socket as the receive thread."""
@@ -51,10 +49,6 @@ class UDPClientThread(QThread):
                         continue  # Don't process through normal command flow
                     
                     self.message_received.emit(f"Received from {addr}: {msg}")
-                    # Parse and handle command if worker is available
-                    if self.worker:
-                        response = self.worker.parse_and_dispatch(msg)
-                        self.message_received.emit(f"Handler response: {response}")
                 except socket.timeout:
                     continue
                 except Exception as e:

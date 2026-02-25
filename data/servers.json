@@ -3,20 +3,20 @@
         {
             "name": "capstanDrive",
             "clientName": "capstanDrive",
-            "host": "192.168.1.244",
+            "host": "192.168.1.157",
             "port": "2222",
             "description": "capstanDrive."
         },
         {
             "name": "spoolerDrive",
-            "clientName": "capstanDrive",
-            "host": "192.168.1.15",
+            "clientName": "spoolerDrive",
+            "host": "192.168.1.244",
             "port": "2222",
             "description": "spoolerDrive."
         },
         {
             "name": "windowDrive",
-            "clientName": "capstanDrive",
+            "clientName": "windowDrive",
             "host": "192.168.1.15",
             "port": "2222",
             "description": "windowDrive."

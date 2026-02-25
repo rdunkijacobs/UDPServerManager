@@ -866,9 +866,10 @@ class MessageCreatorPanel(QWidget):
                             # Fallback to default behavior
                             val = "1" if dropdown_val.lower() in ("true", "1", "on") else "0"
                     elif param_type == 'enum' and param_num == 1:
-                        # For parameter 1 enum, use index instead of text
-                        # currentIndex() - 1 because index 0 is the placeholder ("led_number...")
-                        enum_idx = self.param_dropdowns[idx].currentIndex() - 1
+                        # For parameter 1 enum, use index instead of text.
+                        # Index 0 is the placeholder ("led_number..."), so currentIndex()
+                        # already gives the correct 1-based index for the selected option.
+                        enum_idx = self.param_dropdowns[idx].currentIndex()
                         val = str(enum_idx)
                     else:
                         val = dropdown_val

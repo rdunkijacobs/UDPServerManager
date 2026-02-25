@@ -133,6 +133,32 @@ class MainWindow(QMainWindow):
         self.send_button.setFixedSize(config.SEND_BUTTON_WIDTH, config.SEND_BUTTON_HEIGHT)
         self.send_button.clicked.connect(self.on_send_button_clicked)
 
+        # --- Abort button ---
+        self.abort_button = QPushButton("ABORT")
+        self.abort_button.setFixedSize(config.SEND_BUTTON_WIDTH, config.SEND_BUTTON_HEIGHT)
+        self.abort_button.setEnabled(False)
+        self.abort_button.setStyleSheet(
+            "QPushButton:enabled { background-color: #c0392b; color: white; font-weight: bold; }"
+        )
+        self.abort_button.clicked.connect(self.on_abort_button_clicked)
+        self._last_sent_message = None
+
+        # --- IP-to-device-name lookup (built from servers.json) ---
+        self._ip_name_map = {}
+        for servers in self.servers_by_location.values():
+            for s in servers:
+                host = s.get("host") or s.get("ip")
+                name = s.get("name")
+                if host and name:
+                    self._ip_name_map[host] = name
+
+        # --- Delayed abort enable timer (1.5 s after send) ---
+        self._abort_pending = False
+        self._abort_enable_timer = QTimer(self)
+        self._abort_enable_timer.setSingleShot(True)
+        self._abort_enable_timer.setInterval(1500)
+        self._abort_enable_timer.timeout.connect(self._on_abort_enable_timer)
+
         # --- Main layout: Two horizontal frames (Interactive top, Logging bottom) ---
         main_layout = QVBoxLayout()
         main_layout.setSpacing(0)
@@ -176,7 +202,11 @@ class MainWindow(QMainWindow):
         right_layout.setSpacing(5)
         right_layout.setContentsMargins(5, 5, 5, 5)
         
-        right_layout.addWidget(self.send_button, alignment=Qt.AlignCenter)
+        send_abort_layout = QHBoxLayout()
+        send_abort_layout.setSpacing(5)
+        send_abort_layout.addWidget(self.send_button)
+        send_abort_layout.addWidget(self.abort_button)
+        right_layout.addLayout(send_abort_layout)
         right_layout.addWidget(QLabel("Request:"))
         right_layout.addWidget(self.request_box)
         right_layout.addWidget(QLabel("Reply:"))
@@ -234,10 +264,15 @@ class MainWindow(QMainWindow):
     def on_send_button_clicked(self):
         """Handle send button click - get message from panel and send it."""
         msg = self.message_creator_panel.assembled_output.text()
-        if msg:
+        if msg and '□' not in msg:
+            self._last_sent_message = msg
             self.send_udp_message(msg)
             self.request_box.setText(f"Sent: {msg}")
-            self.reply_box.clear()  # Clear reply box when sending
+            self.reply_box.clear()
+            self._abort_pending = True
+            self._abort_enable_timer.start()
+        elif '□' in msg:
+            self.request_box.setText("Fill in all required fields first.")
         else:
             self.request_box.setText("No message to send")
     
@@ -247,15 +282,50 @@ class MainWindow(QMainWindow):
         self.log_panel.ensureCursorVisible()
     
     def log_reply(self, msg):
-        """Append only actual UDP received messages to reply box (filter out management messages)."""
-        # Only show messages that are actual UDP responses, not system/management messages
+        """Append only actual UDP received messages to reply box, with IP→name translation."""
         if msg.startswith("Received from"):
-            self.reply_box.append(msg)
+            self.reply_box.append(self._translate_received_message(msg))
             self.reply_box.ensureCursorVisible()
-    
+            # Reply arrived — cancel pending abort
+            self._abort_pending = False
+            self._abort_enable_timer.stop()
+            self.abort_button.setEnabled(False)
+
     def clear_reply_box(self):
         """Clear the reply box when user changes any input."""
         self.reply_box.clear()
+        self._abort_pending = False
+        self._abort_enable_timer.stop()
+        self.abort_button.setEnabled(False)
+
+    def on_abort_button_clicked(self):
+        """Abandon the last sent message — no reply expected."""
+        self._abort_pending = False
+        self._abort_enable_timer.stop()
+        self.log_message(f"[ABORTED] No reply received for: {self._last_sent_message}")
+        self.request_box.setText(f"[ABORTED] {self._last_sent_message}")
+        self.reply_box.clear()
+        self.abort_button.setEnabled(False)
+        self._last_sent_message = None
+
+    def _on_abort_enable_timer(self):
+        """Called 1.5 s after send — enable ABORT only if still waiting for a reply."""
+        if self._abort_pending:
+            self.abort_button.setEnabled(True)
+
+    def _translate_received_message(self, msg):
+        """Replace raw IP address in a 'Received from' message with the device name.
+
+        Input:  "Received from ('192.168.1.244', 2222): OK"
+        Output: "Received from capstanDrive (192.168.1.244:2222): OK"
+        """
+        import re
+        match = re.match(r"Received from \('([\d.]+)', (\d+)\): (.*)", msg, re.DOTALL)
+        if match:
+            ip, port, payload = match.groups()
+            name = self._ip_name_map.get(ip, ip)  # Fall back to raw IP if not found
+            return f"From {name}: {payload}"
+        return msg  # Return unchanged if format not recognised
     
     # Message assembly now handled by MessageCreatorPanel
 
