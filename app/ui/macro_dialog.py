@@ -103,6 +103,12 @@ class MacroDialog(QDialog):
         self._wait_timer.setInterval(1000)
         self._wait_timer.timeout.connect(self._on_wait_tick)
 
+        # 2-second singleShot: auto-advance if device doesn't reply in time
+        self._reply_timeout_timer = QTimer(self)
+        self._reply_timeout_timer.setSingleShot(True)
+        self._reply_timeout_timer.setInterval(2000)
+        self._reply_timeout_timer.timeout.connect(self._on_reply_timeout)
+
         self.setWindowTitle(f"Macro Manager — {device_name or 'No device selected'}")
         self.setMinimumWidth(500)
         self.setMinimumHeight(560)
@@ -368,6 +374,7 @@ class MacroDialog(QDialog):
     def _on_reset(self):
         """Return to step 1."""
         self._wait_timer.stop()
+        self._reply_timeout_timer.stop()
         self._step_index = 0
         self._step_lines = []
         self._awaiting_reply = False
@@ -458,6 +465,16 @@ class MacroDialog(QDialog):
             self.step_btn.setEnabled(False)
             self.step_btn.setText("▶  Step Send")
             self.step_reply.setPlainText("Waiting for reply…")
+            self._reply_timeout_timer.start()
+
+    def _on_reply_timeout(self):
+        """Called when no UDP reply arrives within 2 s — advance anyway."""
+        if not self._awaiting_reply:
+            return
+        self._awaiting_reply = False
+        self._step_index += 1
+        self.step_reply.setPlainText("[!] No reply in 2s — advancing.")
+        self._execute_current_step()
 
     def _on_wait_tick(self):
         """Called every second during a 'wait,n' step."""
@@ -488,6 +505,7 @@ class MacroDialog(QDialog):
         if not self._awaiting_reply:
             return
 
+        self._reply_timeout_timer.stop()  # real reply arrived — cancel the timeout
         # Strip the "Received from …" wrapper if still present
         match = re.match(r"Received from \('[\d.]+', \d+\): (.*)", raw_msg, re.DOTALL)
         payload = match.group(1) if match else raw_msg
